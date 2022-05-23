@@ -9,12 +9,12 @@ namespace UniversityAPIBackend.Models.DataModels
         [Key]
         public int Id { get; set; }
 
-        public User? CreatedBy { get; set; } 
+        public  Guid CreatedBy { get; set; } = Guid.NewGuid();
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
-        public User? UpdatedBy { get; set; }
+        public Guid UpdatedBy { get; set; } = Guid.NewGuid();
         public DateTime? UpdatedAt { get; set; }
-        public User? DeletedBy { get; set; }
+        public Guid DeletedBy { get; set; } = Guid.NewGuid();
         public DateTime? DeletedAt { get; set; }
         public bool IsDeleted { get; set; } = false;
     }
