@@ -3,6 +3,15 @@
 namespace UniversityAPIBackend.Models.DataModels
 {
 
+    public enum Level
+    {
+        Basic,
+        Medium,
+        Advanced,
+        Expert
+    }
+
+
     public class Course : BaseEntity
     {
         [Required, StringLength(100)]
@@ -14,7 +23,10 @@ namespace UniversityAPIBackend.Models.DataModels
         public string TargetAudience { get; set; } = string.Empty;
         public string Goals { get; set; } = string.Empty;
         public string Requirements { get; set; } = string.Empty;
-        public CourseLevels level { get; set; }
+        public Level Level { get; set; }
+        [Required]
+        public ICollection<Category> Categories { get; set; } = new List<Category>();
+        
 
 
     }
