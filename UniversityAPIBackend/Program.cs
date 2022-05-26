@@ -1,6 +1,7 @@
 // 1. Usings to work with EF
 using Microsoft.EntityFrameworkCore;
 using UniversityAPIBackend.DataAccess;
+using UniversityAPIBackend.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,8 +9,11 @@ var builder = WebApplication.CreateBuilder(args);
 const string CONNECTIONNAME = "UniversityDB";
 var connectionString = builder.Configuration.GetConnectionString(CONNECTIONNAME);
 
-// 3. Add DB Context
+// 3. Add DB Context to services
 builder.Services.AddDbContext<UniversityDBContext>(options => options.UseSqlServer(connectionString));
+
+// 4. Add Custom Services (folder services)
+builder.Services.AddScoped<IStudentsService, StudentsService>();
 
 // Add services to the container.
 
