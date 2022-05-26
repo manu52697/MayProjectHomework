@@ -25,7 +25,7 @@ namespace UniversityAPIBackend.Services
             return new List<User>();
         }
 
-        // Returns adult users older than age
+        // Returns students older than age
         public IEnumerable<Student> FindOlderThanAgeStudents(int age)
         {
             DateTime newestAllowedDoB = DateTime.Now.Date.AddYears(-age);
@@ -77,7 +77,7 @@ namespace UniversityAPIBackend.Services
         }
 
         // Return courses without enrolled students
-        public IEnumerable<Course> findCoursesWithoutStudents()
+        public IEnumerable<Course> FindCoursesWithoutStudents()
         {
             if (_dbContext.Courses != null)
             {
