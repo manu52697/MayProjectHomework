@@ -5,51 +5,86 @@ using UniversityAPIBackend.Models.DataModels;
 
 namespace UniversityAPIBackend.Services
 {
-    public static class Services
+    public class Services
     {
-        
-        // finds Users by email
-        public static IEnumerable<User> findUserByEmail(IEnumerable<User> users, string email)
+        private readonly UniversityDBContext _dbContext;
+
+        public Services(UniversityDBContext dbContext)
         {
-           return users.Where(u => u.Email == email);
+            _dbContext = dbContext;
+        }
+
+
+        // finds Users by email
+        public IEnumerable<User> FindUserByEmail(string email)
+        {
+            if (_dbContext.Users != null) { 
+                return _dbContext.Users.Where(u => u.Email == email).DefaultIfEmpty();
+            }
+
+            return new List<User>();
         }
 
         // Returns adult users older than age
-        public static IEnumerable<Student> findOlderThanAgeStudents(IEnumerable<Student> students, int age)
+        public IEnumerable<Student> FindOlderThanAgeStudents(int age)
         {
             DateTime newestAllowedDoB = DateTime.Now.Date.AddYears(-age);
+            // return students.Where(s => s.Dob.CompareTo(newestAllowedDoB) < 0);
 
-            return students.Where(s => s.Dob.CompareTo(newestAllowedDoB) < 0);
+            if(_dbContext.Students != null)
+            {
+                return _dbContext.Students.Where(s => s.Dob.CompareTo(newestAllowedDoB) < 0).DefaultIfEmpty();
+            }
+
+            return new List<Student>();
         }
 
-        // returns adult students
-        public static IEnumerable<Student> findOlderThanEightTeenStudents(IEnumerable<Student> students)
+        // returns adult students (older than 18)
+        public IEnumerable<Student> FindOlderThanEightTeenStudents()
         {
-            return findOlderThanAgeStudents(students, 18);
+            return FindOlderThanAgeStudents(18);
         }
 
         // returns students enrolled in at least one course
-        public static IEnumerable<Student> findAlreadyEnrolledStudents(IEnumerable<Student> students)
+        public  IEnumerable<Student> FindAlreadyEnrolledStudents()
         {
-            return students.Where(s => s.Courses.Any());
+            if(_dbContext.Students != null)
+            {
+                return _dbContext.Students.Where(s => s.Courses.Any());
+            }
+
+            return new List<Student>();
         } 
 
         // Returns courses by level, wich have at least one student enrolled
-        public static IEnumerable<Course> hasStudentsByLevel(IEnumerable<Course> courses ,Level level)
+        public IEnumerable<Course> HasStudentsByLevel(Level level)
         {
-            return courses.Where(c => c.Level == level && c.Students.Any());
+            if(_dbContext.Courses != null)
+            {
+                return _dbContext.Courses.Where(c => c.Level == level && c.Students.Any());
+            }
+            return new List<Course>();
         }
 
         // Returns all courses that share the especified Level and Category
-        public static IEnumerable<Course> FilterCoursesByLevelAndCategory(IEnumerable<Course> courses, Level level, Category category)
+        public IEnumerable<Course> FilterCoursesByLevelAndCategory(Level level, Category category)
         {
-            return courses.Where(c => c.Level == level && c.Categories.Contains(category));
+            if(_dbContext.Courses != null)
+            {
+                return _dbContext.Courses.Where(c => c.Level == level && c.Categories.Contains(category));
+            }
+            return new List<Course>();
         }
 
         // Return courses without enrolled students
-        public static IEnumerable<Course> findCoursesWithoutStudents(IEnumerable<Course> courses)
+        public IEnumerable<Course> findCoursesWithoutStudents()
         {
-            return courses.Where(c => !c.Students.Any());
+            if (_dbContext.Courses != null)
+            {
+                return _dbContext.Courses.Where(c => !c.Students.Any());
+            }
+            return new List<Course>();
+            
         }
 
     }
