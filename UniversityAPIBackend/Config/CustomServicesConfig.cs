@@ -14,6 +14,7 @@ namespace UniversityAPIBackend.Config
         {
             builder.Services.AddScoped<IStudentsService, StudentsService>();
             builder.Services.AddScoped<ICategoriesService, CategoriesService>();
+            builder.Services.AddScoped<ICoursesService, CoursesService>();
             // TODO: Inject the remaining search services
         }
     }
