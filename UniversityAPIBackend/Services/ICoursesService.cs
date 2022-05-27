@@ -7,5 +7,9 @@ namespace UniversityAPIBackend.Services
 
         IEnumerable<Course> GetCoursesWithNoChapters();
 
+        Chapter GetCourseChapter(Course course);
+
+        IEnumerable<Student> GetCourseStudents(Course course);
+
     }
 }
