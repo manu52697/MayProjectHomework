@@ -1,5 +1,6 @@
 // 1. Usings to work with EF
 using Microsoft.EntityFrameworkCore;
+using UniversityAPIBackend.Config;
 using UniversityAPIBackend.DataAccess;
 using UniversityAPIBackend.Services;
 
@@ -13,7 +14,9 @@ var connectionString = builder.Configuration.GetConnectionString(CONNECTIONNAME)
 builder.Services.AddDbContext<UniversityDBContext>(options => options.UseSqlServer(connectionString));
 
 // 4. Add Custom Services (folder services)
-builder.Services.AddScoped<IStudentsService, StudentsService>();
+// builder.Services.AddScoped<IStudentsService, StudentsService>(); // Example -> moved to CustomServicesConfig class
+CustomServicesConfig.DeclareCustomServices(builder);
+
 
 // Add services to the container.
 
