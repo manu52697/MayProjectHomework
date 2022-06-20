@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using UniversityAPIBackend.DataAccess;
 using UniversityAPIBackend.Models.DataModels;
+using UniversityAPIBackend.Services;
 
 namespace UniversityAPIBackend.Controllers
 {
@@ -15,10 +16,12 @@ namespace UniversityAPIBackend.Controllers
     public class ChaptersController : ControllerBase
     {
         private readonly UniversityDBContext _context;
+        private readonly IChaptersService _service;
 
-        public ChaptersController(UniversityDBContext context)
+        public ChaptersController(UniversityDBContext context, IChaptersService service)
         {
             _context = context;
+            _service = service;
         }
 
         // GET: api/Chapters
@@ -119,6 +122,25 @@ namespace UniversityAPIBackend.Controllers
         private bool ChapterExists(int id)
         {
             return (_context.Chapters?.Any(e => e.Id == id)).GetValueOrDefault();
+        }
+
+        // Custom Controllers
+        // GET: api/Chapters/search
+        [HttpGet("search")]
+        public async Task<ActionResult<IEnumerable<Chapter>>> SearchChapters([FromQuery] Int32? courseId)
+        {
+            var chapters = await _service.SearchChapters(courseId);
+            if(chapters == null)
+            {
+                return NotFound();
+            }
+            if (!chapters.Any())
+            {
+                return NoContent();
+            }
+            return Ok(chapters);
+
+
         }
     }
 }
