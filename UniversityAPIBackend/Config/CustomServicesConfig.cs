@@ -12,9 +12,8 @@ namespace UniversityAPIBackend.Config
 
         private static void DeclareCustomSerachServices(WebApplicationBuilder builder)
         {
-            builder.Services.AddScoped<IStudentsService, StudentsService>();
-            builder.Services.AddScoped<ICategoriesService, CategoriesService>();
             builder.Services.AddScoped<ICoursesService, CoursesService>();
+            builder.Services.AddScoped<IStudentsService, StudentsService>();
             // TODO: Inject the remaining search services
         }
     }
