@@ -1,4 +1,5 @@
-﻿using UniversityAPIBackend.DataAccess;
+﻿using Microsoft.EntityFrameworkCore;
+using UniversityAPIBackend.DataAccess;
 using UniversityAPIBackend.Models.DataModels;
 
 namespace UniversityAPIBackend.Services
@@ -9,30 +10,56 @@ namespace UniversityAPIBackend.Services
         {
         }
 
-
-        public IEnumerable<Student> GetStudentsWithCourses()
+        public Boolean CheckContext()
         {
-            return GetStudentsByEnrollment(true);
-        }
-
-        public IEnumerable<Student> GetStudentsWithNoCourses()
-        {
-            return GetStudentsByEnrollment(false);
-        }
-
-        // Returns students with or without any courses, conditional on `searchEnrolled`
-        private IEnumerable<Student> GetStudentsByEnrollment(bool searchEnrolled)
-        {
-
-            if(_dbContext.Students != null)
+            if(_dbContext.Students == null)
             {
-                if (searchEnrolled)
-                {
-                    return _dbContext.Students.Where(s => s.Courses.Any());
-                }
-                return _dbContext.Students.Where(s => !s.Courses.Any());
+                return false;
             }
-            return new List<Student>();
+            return true;
+        }
+
+        // Methods that return tasks
+
+        public async Task<IEnumerable<Student>> GetStudentsByCourse(int courseId)
+        {
+            var query = GetAllStudents();
+            query = FilterStudentsByCourse(query, courseId);
+            return await query.ToListAsync();
+        }
+
+        public async Task<IEnumerable<Student>> GetAllStudentsNotEnroled()
+        {
+            var query = GetAllStudents();
+            query = FilterByEnrolment(query, false);
+            return await query.ToListAsync();
+        }
+
+
+        // Methods that return IQueryable
+
+
+        private IQueryable<Student> GetAllStudents()
+        {
+            if (CheckContext())
+            {
+                return _dbContext.Students;
+            }
+            return new List<Student>().AsQueryable();
+        }
+
+        private IQueryable<Student> FilterStudentsByCourse(IQueryable<Student> query ,int courseId)
+        {
+            return query.Where((s) => s.Courses.Any((c) => c.Id == courseId));
+        }
+
+        private IQueryable<Student> FilterByEnrolment(IQueryable<Student> query, bool filterEnroled)
+        {
+            if (filterEnroled)
+            {
+                return query.Where((s) => s.Courses.Any());
+            }
+            return query.Where((s) => !s.Courses.Any());
         }
     }
 }
