@@ -1,4 +1,5 @@
 ﻿using UniversityAPIBackend.DataAccess;
+using Microsoft.EntityFrameworkCore;
 
 namespace UniversityAPIBackend.Services
 {
@@ -10,5 +11,6 @@ namespace UniversityAPIBackend.Services
         {
             _dbContext = dbContext;
         }
+
     }
 }

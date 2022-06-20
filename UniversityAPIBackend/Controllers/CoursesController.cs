@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using UniversityAPIBackend.DataAccess;
 using UniversityAPIBackend.Models.DataModels;
+using UniversityAPIBackend.Services;
 
 namespace UniversityAPIBackend.Controllers
 {
@@ -15,39 +16,38 @@ namespace UniversityAPIBackend.Controllers
     public class CoursesController : ControllerBase
     {
         private readonly UniversityDBContext _context;
+        private readonly ICoursesService _service;
 
-        public CoursesController(UniversityDBContext context)
+        public CoursesController(UniversityDBContext context, ICoursesService service)
         {
             _context = context;
+            _service = service;
         }
 
-        // GET: api/Courses
+        // GET: api/courses?category={String}&studentId={Int32}
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Course>>> GetCourses()
+        public async Task<ActionResult<IEnumerable<Course>>> GetCourses(String? category = null, Int32? studentId = null)
         {
-          if (_context.Courses == null)
-          {
-              return NotFound();
-          }
-            return await _context.Courses.ToListAsync();
+            var courses = await _service.GetCoursesWithFilterByCategoryNameAndStudentId(category, studentId);
+
+            if (courses.Any())
+            {
+                return Ok(courses);
+            }
+
+            return NoContent();
         }
 
         // GET: api/Courses/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Course>> GetCourse(int id)
         {
-          if (_context.Courses == null)
-          {
-              return NotFound();
-          }
-            var course = await _context.Courses.FindAsync(id);
-
+            var course = await _service.GetCourseById(id);
             if (course == null)
             {
-                return NotFound();
+                NotFound();
             }
-
-            return course;
+            return Ok(course);
         }
 
         // PUT: api/Courses/5
@@ -60,22 +60,17 @@ namespace UniversityAPIBackend.Controllers
                 return BadRequest();
             }
 
-            _context.Entry(course).State = EntityState.Modified;
-
             try
             {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!CourseExists(id))
+                var updatedCourse = await _service.UpdateCourse(id, course);
+                if(updatedCourse == null)
                 {
                     return NotFound();
                 }
-                else
-                {
-                    throw;
-                }
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                throw;
             }
 
             return NoContent();
@@ -86,7 +81,22 @@ namespace UniversityAPIBackend.Controllers
         [HttpPost]
         public async Task<ActionResult<Course>> PostCourse(Course course)
         {
-          if (_context.Courses == null)
+            if (!_service.CheckContext())
+            {
+                return Problem("Entity set 'UniversityDBContext.Courses'  is null.");
+            }
+
+            var createdCourse = await _service.CreateCourse(course);
+            if (course == null)
+            {
+                return BadRequest();
+            }
+
+            return CreatedAtAction("GetCourse", new { id = course.Id }, course);
+
+            // Default code (for reference)
+            /*
+            if (_context.Courses == null)
           {
               return Problem("Entity set 'UniversityDBContext.Courses'  is null.");
           }
@@ -94,12 +104,22 @@ namespace UniversityAPIBackend.Controllers
             await _context.SaveChangesAsync();
 
             return CreatedAtAction("GetCourse", new { id = course.Id }, course);
+            */
         }
 
         // DELETE: api/Courses/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteCourse(int id)
         {
+            var foundAndDeleted = await _service.DeleteCourse(id);
+            if (foundAndDeleted)
+            {
+                return NoContent();
+            }
+            return NotFound();
+
+            // Old code (for reference)
+            /*
             if (_context.Courses == null)
             {
                 return NotFound();
@@ -114,11 +134,30 @@ namespace UniversityAPIBackend.Controllers
             await _context.SaveChangesAsync();
 
             return NoContent();
+            */
         }
 
         private bool CourseExists(int id)
         {
             return (_context.Courses?.Any(e => e.Id == id)).GetValueOrDefault();
         }
+
+        // Custom Controllers
+
+
+        // GET: api/Courses/with-missing-chapters
+        [HttpGet("with-missing-chapter")]
+        public async Task<ActionResult<Course>> GetCoursesWithoutChapter()
+        {
+            var courses = await _service.GetCoursesWithNoChapters();
+            
+
+            if(!courses.Any())
+            {
+                return NoContent();
+            }
+            return Ok(courses);
+        }
+
     }
 }
