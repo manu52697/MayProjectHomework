@@ -26,13 +26,29 @@ namespace UniversityAPIBackend.Controllers
 
         // GET: api/Students
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Student>>> GetStudents()
+        public async Task<ActionResult<IEnumerable<Student>>> GetStudents([FromQuery] Int32? courseId)
         {
+
+            IEnumerable<Student> students;
+
           if (_context.Students == null)
           {
               return NotFound();
           }
-            return await _context.Students.ToListAsync();
+
+          if(courseId == null)
+            {
+                students = await _context.Students.ToListAsync();
+            } else
+            {
+                students = await _studentsService.GetStudentsByCourse((int)courseId);
+            }
+
+            if (!students.Any())
+            {
+                return NoContent();
+            }
+            return Ok(students);  
         }
 
         // GET: api/Students/5
@@ -119,9 +135,25 @@ namespace UniversityAPIBackend.Controllers
             return NoContent();
         }
 
+
+
         private bool StudentExists(int id)
         {
             return (_context.Students?.Any(e => e.Id == id)).GetValueOrDefault();
+        }
+
+
+        // Custom endpoints
+        // GET: api/Students
+        [HttpGet("not-enroled")]
+        public async Task<ActionResult<IEnumerable<Student>>> GetStudentsNotEnrolled()
+        {
+            var students = await _studentsService.GetAllStudentsNotEnroled();
+            if (!students.Any())
+            {
+                return NoContent();
+            }
+            return Ok(students);
         }
     }
 }
