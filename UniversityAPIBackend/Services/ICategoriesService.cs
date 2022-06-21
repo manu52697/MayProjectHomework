@@ -5,7 +5,7 @@ namespace UniversityAPIBackend.Services
     public interface ICategoriesService
     {
 
-        IEnumerable<Course> GetCoursesByCategory(Category category);
+        Task<IEnumerable<Category>?> SearchCategories(String? name);
 
     }
 }

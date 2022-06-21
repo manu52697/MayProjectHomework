@@ -1,5 +1,6 @@
 ﻿using UniversityAPIBackend.DataAccess;
 using UniversityAPIBackend.Models.DataModels;
+using Microsoft.EntityFrameworkCore;
 
 namespace UniversityAPIBackend.Services
 {
@@ -9,14 +10,48 @@ namespace UniversityAPIBackend.Services
         {
         }
 
-        public IEnumerable<Course> GetCoursesByCategory(Category category)
+        public bool CheckContext()
         {
-            if(_dbContext.Courses != null) {
-                return _dbContext.Courses.Where(c => c.Categories.Contains(category));
+            if(_dbContext.Category == null)
+            {
+                return false;
             }
-
-            return new List<Course>();
-            
+            return true;
         }
+
+
+        public async Task<IEnumerable<Category>?> SearchCategories(String? name)
+        {
+            if (CheckContext())
+            {
+                var query = GetAllCategories();
+                if(name != null)
+                {
+                    query = FilterCategoriesByName(query, name);
+                }
+                return await query.ToListAsync();
+                
+            }
+            return null;
+        }
+
+        // methods that return IQueryable
+
+        private IQueryable<Category> GetAllCategories()
+        {
+            if (CheckContext())
+            {
+                return _dbContext.Category;
+            }
+            return new List<Category>().AsQueryable();
+        }
+
+        private IQueryable<Category> FilterCategoriesByName(IQueryable<Category> query, string name)
+        {
+            return query.Where((cat) => cat.Name.Contains(name));
+        }
+
+
+        
     }
 }

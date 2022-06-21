@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using UniversityAPIBackend.DataAccess;
 using UniversityAPIBackend.Models.DataModels;
+using UniversityAPIBackend.Services;
 
 namespace UniversityAPIBackend.Controllers
 {
@@ -15,10 +16,12 @@ namespace UniversityAPIBackend.Controllers
     public class CategoriesController : ControllerBase
     {
         private readonly UniversityDBContext _context;
+        private readonly ICategoriesService _service;
 
-        public CategoriesController(UniversityDBContext context)
+        public CategoriesController(UniversityDBContext context, ICategoriesService service)
         {
             _context = context;
+            _service = service;
         }
 
         // GET: api/Categories
@@ -119,6 +122,24 @@ namespace UniversityAPIBackend.Controllers
         private bool CategoryExists(int id)
         {
             return (_context.Category?.Any(e => e.Id == id)).GetValueOrDefault();
+        }
+
+
+        // Custom Controllers
+        // GET: api/Categories
+        [HttpGet("search")]
+        public async Task<ActionResult<IEnumerable<Category>>> SearchCategories([FromBody] String? name)
+        {
+            var categories = await _service.SearchCategories(name);
+            if (categories == null)
+            {
+                return BadRequest();
+            }
+            if (!categories.Any())
+            {
+                return NoContent();
+            }
+            return Ok(categories);
         }
     }
 }
